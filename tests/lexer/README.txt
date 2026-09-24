@@ -1,1 +1,3 @@
-# Lexer test inputs. Commit 5+ here, incl. >=2 that must fail (issue #1 DoD).
+Lexer test inputs.
+valid_*   must tokenize with no error.
+invalid_* must produce a lexical error with the correct line number (line 4 or 1, see file).

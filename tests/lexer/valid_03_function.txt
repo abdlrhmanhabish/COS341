@@ -1,0 +1,5 @@
+#a
+:
+num #f ( #p ) { : : nop ; return ( mul ( #p 2 ) ) }
+:
+#a = #f ( 3 ) ;

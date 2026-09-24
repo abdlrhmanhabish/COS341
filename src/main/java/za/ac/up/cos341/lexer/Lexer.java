@@ -1,22 +1,24 @@
 package za.ac.up.cos341.lexer;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public final class Lexer {
 
-    // TODO: copy these three patterns VERBATIM from the Part-1 grammar spec.
-    // Known constraints (do not reinvent, transcribe):
-    //   NUM    -> no leading zeros except the single digit 0; no trailing zeros after the decimal point
-    //   NAME   -> starts with '#'
-    //   STRING -> quote-delimited
-    private static final String NUM_REGEX = "";     // TODO
-    private static final String NAME_REGEX = "";    // TODO
-    private static final String STRING_REGEX = "";  // TODO
+    // NUM : no leading zeros except the single digit 0; no trailing zeros after the
+    // decimal point
+    // NAME : starts with '#'
+    // STRING : quote-delimited
+    private static final Pattern NUM = Pattern.compile(
+            "0|[1-9][0-9]*|0\\.[0-9]*[1-9]|[1-9][0-9]*\\.[0-9]*[1-9]");
+    private static final Pattern NAME = Pattern.compile("#[a-zA-Z0-9_]*");
+    private static final Pattern STRING = Pattern.compile("\"[^\"]*\"");
 
     private static final Map<String, TokenType> KEYWORDS = Map.ofEntries(
             Map.entry("void", TokenType.VOID),
@@ -54,15 +56,35 @@ public final class Lexer {
             Map.entry("=", TokenType.ASSIGN));
 
     public List<Token> tokenize(Path path) throws IOException {
-        return tokenize(Files.readString(path));
+        return tokenize(Files.readString(path, StandardCharsets.US_ASCII));
     }
 
     public List<Token> tokenize(String source) {
         List<Token> tokens = new ArrayList<>();
-        // TODO: scan `source`, splitting on ASCII 32 and 13 (blank-space terminated).
-        //       Track the current line number as you go and stamp each token with it.
-        //       For every non-empty chunk, call classify(chunk, line) and add the result.
-        //       Do NOT emit a '$' token -- the parser injects that itself.
+        StringBuilder chunk = new StringBuilder();
+        int line = 1;
+        int chunkLine = 1;
+
+        for (int i = 0; i < source.length(); i++) {
+            char c = source.charAt(i);
+            if (c == ' ' || c == '\r' || c == '\n') {
+                if (chunk.length() > 0) {
+                    tokens.add(classify(chunk.toString(), chunkLine));
+                    chunk.setLength(0);
+                }
+                if (c == '\n') {
+                    line++;
+                }
+            } else {
+                if (chunk.length() == 0) {
+                    chunkLine = line;
+                }
+                chunk.append(c);
+            }
+        }
+        if (chunk.length() > 0) {
+            tokens.add(classify(chunk.toString(), chunkLine));
+        }
         return tokens;
     }
 
@@ -75,11 +97,15 @@ public final class Lexer {
         if (sym != null) {
             return new Token(sym, chunk, line);
         }
-        // TODO: test the three category regexes in the order your spec prioritises:
-        //       if chunk matches NUM    -> new Token(TokenType.NUM, chunk, line)
-        //       if chunk matches NAME   -> new Token(TokenType.NAME, chunk, line)
-        //       if chunk matches STRING -> new Token(TokenType.STRING, chunk, line)
-        //       else -> throw new LexicalException(chunk, line);
+        if (NUM.matcher(chunk).matches()) {
+            return new Token(TokenType.NUM, chunk, line);
+        }
+        if (NAME.matcher(chunk).matches()) {
+            return new Token(TokenType.NAME, chunk, line);
+        }
+        if (STRING.matcher(chunk).matches()) {
+            return new Token(TokenType.STRING, chunk, line);
+        }
         throw new LexicalException(chunk, line);
     }
 }
