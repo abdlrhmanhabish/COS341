@@ -1,0 +1,6 @@
+#i
+:
+:
+#i = 0 ;
+while lesser ( #i 10 ) do { #i = add ( #i 1 ) ; } ;
+if eq ( #i 10 ) then { print "done" ; } else { nop ; } ;
