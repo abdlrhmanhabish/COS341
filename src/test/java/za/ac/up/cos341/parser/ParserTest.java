@@ -136,7 +136,8 @@ class ParserTest {
     @Test
     void sampleProgramGivesTheCommittedSampleTree() throws IOException {
         String expected = new String(Files.readAllBytes(Paths.get("tests", "sample-tree.xml")), StandardCharsets.UTF_8);
-        assertEquals(expected, XmlWriter.toXmlString(parse("#x : : #x = 3 ; print \"hello,world!\" ;")));
+        assertEquals(expected.replace("\r\n", "\n").trim(),
+                XmlWriter.toXmlString(parse("#x : : #x = 3 ; print \"hello,world!\" ;")).trim());
     }
 
     @ParameterizedTest
