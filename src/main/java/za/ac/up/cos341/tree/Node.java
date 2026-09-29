@@ -19,7 +19,7 @@ public final class Node {
         this.parent = parent;
     }
 
-    // this ID is unique for each node inside  tree
+    // this ID is unique for each node inside the tree
     public int getId() {
         return id;
     }
@@ -44,7 +44,7 @@ public final class Node {
         return Collections.unmodifiableList(children);
     }
 
-    // to add a child node 
+    // to add a child node
     void addChild(int childId) {
         children.add(childId);
     }

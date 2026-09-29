@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Arrays;
 import java.util.List;
 
 class SyntaxTreeTest {
@@ -51,7 +52,7 @@ class SyntaxTreeTest {
         Node left = tree.createLeaf("nop", root);
         Node right = tree.createLeaf("$", root);
 
-        assertEquals(List.of(1, 2), root.getChildren());
+        assertEquals(Arrays.asList(1, 2), root.getChildren());
         assertEquals(0, left.getParent());
         assertEquals(0, right.getParent());
         assertEquals(NodeKind.LEAF, left.getKind());
@@ -66,9 +67,9 @@ class SyntaxTreeTest {
         Node inner = tree.createInner("ALGO", outer);
         Node leaf = tree.createLeaf("nop", inner);
 
-        assertEquals(List.of(1), root.getChildren());
-        assertEquals(List.of(2), outer.getChildren());
-        assertEquals(List.of(3), inner.getChildren());
+        assertEquals(Arrays.asList(1), root.getChildren());
+        assertEquals(Arrays.asList(2), outer.getChildren());
+        assertEquals(Arrays.asList(3), inner.getChildren());
         assertEquals(0, outer.getParent());
         assertEquals(1, inner.getParent());
         assertEquals(2, leaf.getParent());

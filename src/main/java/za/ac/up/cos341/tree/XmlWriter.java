@@ -6,15 +6,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-// Writes a SyntaxTree out as the tree.xml file. The root first, then every inner node, then every leaf
-// each node carrys its unique ID and its links to the neighbouring nodes
+// It writes a SyntaxTree out as the tree.xml file. the root first, then every inner node, then every leaf
+//each node carries its unique ID and its links to the neighbouring nodes
 public final class XmlWriter {
     private static final String NEWLINE = "\n";
     private static final String INDENT = "  ";
     private XmlWriter() {}
 
     /**
-     * Serialises the tree and writes it to {@code outputPath} as UTF-8. It creats a file or replaces an existing one.
+     * Serialises the tree and writes it to {@code outputPath} as UTF-8. It creates the file or replaces an existing one.
      *
      * @throws IllegalStateException if the tree has no root node
      * @throws IOException           if the file cannot be written
@@ -25,7 +25,7 @@ public final class XmlWriter {
         if (parent != null) {
             Files.createDirectories(parent);
         }
-        Files.writeString(outputPath, xml, StandardCharsets.UTF_8);
+        Files.write(outputPath, xml.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -111,18 +111,29 @@ public final class XmlWriter {
         return out;
     }
 
-    //replaces the five characters that XML reserves. That way the SPL tokens such as strings with punctuation survive into the output file unchanged
+    // this replaces the five characters that XML reserves. That way SPL tokens such as strings with punctuation survive into the output file unchanged
     static String escape(String text) {
         StringBuilder escaped = new StringBuilder(text.length());
         for (int i = 0; i < text.length(); i++) {
             char symbol = text.charAt(i);
             switch (symbol) {
-                case '&' -> escaped.append("&amp;");
-                case '<' -> escaped.append("&lt;");
-                case '>' -> escaped.append("&gt;");
-                case '"' -> escaped.append("&quot;");
-                case '\'' -> escaped.append("&apos;");
-                default -> escaped.append(symbol);
+                case '&':
+                    escaped.append("&amp;");
+                    break;
+                case '<':
+                    escaped.append("&lt;");
+                    break;
+                case '>':
+                    escaped.append("&gt;");
+                    break;
+                case '"':
+                    escaped.append("&quot;");
+                    break;
+                case '\'':
+                    escaped.append("&apos;");
+                    break;
+                default:
+                    escaped.append(symbol);
             }
         }
         return escaped.toString();

@@ -12,7 +12,7 @@ class SampleTreeTest {
     @Test
     void theGeneratedSampleMatchesTheSampleTree() throws IOException {
         assertTrue(Files.exists(SampleTree.SAMPLE_FILE), "tests/sample-tree.xml is missing; regenerate it with SampleTree.main");
-        String generated = Files.readString(SampleTree.SAMPLE_FILE, StandardCharsets.UTF_8);
+        String generated = new String(Files.readAllBytes(SampleTree.SAMPLE_FILE), StandardCharsets.UTF_8);
         assertEquals(XmlWriter.toXmlString(SampleTree.build()), generated, "tests/sample-tree.xml is out of date; regenerate it with SampleTree.main");
     }
 

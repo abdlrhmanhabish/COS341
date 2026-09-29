@@ -17,21 +17,19 @@ class XmlWriterTest {
         SyntaxTree tree = new SyntaxTree();
         tree.createRoot("SPL_PROG");
 
-        assertEquals("""
-                <?xml version="1.0" encoding="UTF-8"?>
-                <SYNTREE>
-                  <ROOT>
-                    <UNID>0</UNID>
-                    <SYMB>SPL_PROG</SYMB>
-                    <CHILDREN>
-                    </CHILDREN>
-                  </ROOT>
-                  <INNERNODES>
-                  </INNERNODES>
-                  <LEAFNODES>
-                  </LEAFNODES>
-                </SYNTREE>
-                """, XmlWriter.toXmlString(tree));
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<SYNTREE>\n"
+                + "  <ROOT>\n"
+                + "    <UNID>0</UNID>\n"
+                + "    <SYMB>SPL_PROG</SYMB>\n"
+                + "    <CHILDREN>\n"
+                + "    </CHILDREN>\n"
+                + "  </ROOT>\n"
+                + "  <INNERNODES>\n"
+                + "  </INNERNODES>\n"
+                + "  <LEAFNODES>\n"
+                + "  </LEAFNODES>\n"
+                + "</SYNTREE>\n", XmlWriter.toXmlString(tree));
     }
 
     @Test
@@ -41,33 +39,31 @@ class XmlWriterTest {
         tree.createLeaf("nop", root);
         tree.createLeaf("$", root);
 
-        assertEquals("""
-                <?xml version="1.0" encoding="UTF-8"?>
-                <SYNTREE>
-                  <ROOT>
-                    <UNID>0</UNID>
-                    <SYMB>SPL_PROG</SYMB>
-                    <CHILDREN>
-                      <ID>1</ID>
-                      <ID>2</ID>
-                    </CHILDREN>
-                  </ROOT>
-                  <INNERNODES>
-                  </INNERNODES>
-                  <LEAFNODES>
-                    <LEAF>
-                      <PARENT>0</PARENT>
-                      <UNID>1</UNID>
-                      <TERMINAL>nop</TERMINAL>
-                    </LEAF>
-                    <LEAF>
-                      <PARENT>0</PARENT>
-                      <UNID>2</UNID>
-                      <TERMINAL>$</TERMINAL>
-                    </LEAF>
-                  </LEAFNODES>
-                </SYNTREE>
-                """, XmlWriter.toXmlString(tree));
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<SYNTREE>\n"
+                + "  <ROOT>\n"
+                + "    <UNID>0</UNID>\n"
+                + "    <SYMB>SPL_PROG</SYMB>\n"
+                + "    <CHILDREN>\n"
+                + "      <ID>1</ID>\n"
+                + "      <ID>2</ID>\n"
+                + "    </CHILDREN>\n"
+                + "  </ROOT>\n"
+                + "  <INNERNODES>\n"
+                + "  </INNERNODES>\n"
+                + "  <LEAFNODES>\n"
+                + "    <LEAF>\n"
+                + "      <PARENT>0</PARENT>\n"
+                + "      <UNID>1</UNID>\n"
+                + "      <TERMINAL>nop</TERMINAL>\n"
+                + "    </LEAF>\n"
+                + "    <LEAF>\n"
+                + "      <PARENT>0</PARENT>\n"
+                + "      <UNID>2</UNID>\n"
+                + "      <TERMINAL>$</TERMINAL>\n"
+                + "    </LEAF>\n"
+                + "  </LEAFNODES>\n"
+                + "</SYNTREE>\n", XmlWriter.toXmlString(tree));
     }
 
     @Test
@@ -78,43 +74,41 @@ class XmlWriterTest {
         Node algo = tree.createInner("ALGO", parent);
         tree.createLeaf("nop", algo);
 
-        assertEquals("""
-                <?xml version="1.0" encoding="UTF-8"?>
-                <SYNTREE>
-                  <ROOT>
-                    <UNID>0</UNID>
-                    <SYMB>SPL_PROG</SYMB>
-                    <CHILDREN>
-                      <ID>1</ID>
-                    </CHILDREN>
-                  </ROOT>
-                  <INNERNODES>
-                    <IN>
-                      <PARENT>0</PARENT>
-                      <UNID>1</UNID>
-                      <SYMB>P</SYMB>
-                      <CHILDREN>
-                        <ID>2</ID>
-                      </CHILDREN>
-                    </IN>
-                    <IN>
-                      <PARENT>1</PARENT>
-                      <UNID>2</UNID>
-                      <SYMB>ALGO</SYMB>
-                      <CHILDREN>
-                        <ID>3</ID>
-                      </CHILDREN>
-                    </IN>
-                  </INNERNODES>
-                  <LEAFNODES>
-                    <LEAF>
-                      <PARENT>2</PARENT>
-                      <UNID>3</UNID>
-                      <TERMINAL>nop</TERMINAL>
-                    </LEAF>
-                  </LEAFNODES>
-                </SYNTREE>
-                """, XmlWriter.toXmlString(tree));
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<SYNTREE>\n"
+                + "  <ROOT>\n"
+                + "    <UNID>0</UNID>\n"
+                + "    <SYMB>SPL_PROG</SYMB>\n"
+                + "    <CHILDREN>\n"
+                + "      <ID>1</ID>\n"
+                + "    </CHILDREN>\n"
+                + "  </ROOT>\n"
+                + "  <INNERNODES>\n"
+                + "    <IN>\n"
+                + "      <PARENT>0</PARENT>\n"
+                + "      <UNID>1</UNID>\n"
+                + "      <SYMB>P</SYMB>\n"
+                + "      <CHILDREN>\n"
+                + "        <ID>2</ID>\n"
+                + "      </CHILDREN>\n"
+                + "    </IN>\n"
+                + "    <IN>\n"
+                + "      <PARENT>1</PARENT>\n"
+                + "      <UNID>2</UNID>\n"
+                + "      <SYMB>ALGO</SYMB>\n"
+                + "      <CHILDREN>\n"
+                + "        <ID>3</ID>\n"
+                + "      </CHILDREN>\n"
+                + "    </IN>\n"
+                + "  </INNERNODES>\n"
+                + "  <LEAFNODES>\n"
+                + "    <LEAF>\n"
+                + "      <PARENT>2</PARENT>\n"
+                + "      <UNID>3</UNID>\n"
+                + "      <TERMINAL>nop</TERMINAL>\n"
+                + "    </LEAF>\n"
+                + "  </LEAFNODES>\n"
+                + "</SYNTREE>\n", XmlWriter.toXmlString(tree));
     }
 
     @Test
@@ -167,7 +161,7 @@ class XmlWriterTest {
         tree.createLeaf("\"str, with punctuation: ok!\"", root);
         Path target = directory.resolve("out").resolve("tree.xml");
         XmlWriter.write(tree, target);
-        String written = Files.readString(target, StandardCharsets.UTF_8);
+        String written = new String(Files.readAllBytes(target), StandardCharsets.UTF_8);
 
         assertEquals(XmlWriter.toXmlString(tree), written);
         assertTrue(written.endsWith("</SYNTREE>\n"), "the file ends with a newline");

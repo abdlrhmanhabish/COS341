@@ -1,6 +1,6 @@
 package za.ac.up.cos341.tree;
 
-// The three kinds of node that the tree.xml output distinguish
+// The three kinds of node that the tree.xml output distinguishes
 public enum NodeKind {
     // The single start-symbol node of the tree. Has children, no parent
     ROOT,

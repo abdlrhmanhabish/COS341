@@ -5,7 +5,6 @@
     <SYMB>SPL_PROG</SYMB>
     <CHILDREN>
       <ID>1</ID>
-      <ID>23</ID>
     </CHILDREN>
   </ROOT>
   <INNERNODES>
@@ -159,17 +158,12 @@
     <LEAF>
       <PARENT>19</PARENT>
       <UNID>20</UNID>
-      <TERMINAL>&quot;hello, world!&quot;</TERMINAL>
+      <TERMINAL>&quot;hello,world!&quot;</TERMINAL>
     </LEAF>
     <LEAF>
       <PARENT>16</PARENT>
       <UNID>21</UNID>
       <TERMINAL>;</TERMINAL>
-    </LEAF>
-    <LEAF>
-      <PARENT>0</PARENT>
-      <UNID>23</UNID>
-      <TERMINAL>$</TERMINAL>
     </LEAF>
   </LEAFNODES>
 </SYNTREE>
