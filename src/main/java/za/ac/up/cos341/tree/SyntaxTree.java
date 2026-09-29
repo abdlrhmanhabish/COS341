@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 // This is the syntax tree that the parser builds while it works through an SPL program
-// The tree owns its own ID counter. so every node of one tree carries an ID that occurs nowhere else in that tree. 
+// The tree owns its own ID counter. every node of one tree carries an ID that occurs nowhere else in that tree.
 // The counter is an instance field and not static: two trees built in the same JVM do not interfere with each other, and both start counting at 0
 public final class SyntaxTree {
     private Node root;
@@ -91,7 +91,7 @@ public final class SyntaxTree {
         return nodes.size();
     }
 
-    // Creates a new node with the specified kind, contetns and parent.
+    // Creates a new node with the specified kind, contents and parent.
     private Node newNode(NodeKind kind, String contents, Integer parentId) {
         if (contents == null) {
             throw new IllegalArgumentException("Node contents may not be null.");
@@ -104,7 +104,7 @@ public final class SyntaxTree {
     // Makes sure every child node has a valid parent node
     private void checkParent(Node parent) {
         if (parent == null) {
-            throw new IllegalArgumentException("A child node needs a parent. pass the node it hangs under.");
+            throw new IllegalArgumentException("A child node needs a parent. Pass the node it hangs under.");
         }
         if (nodes.get(parent.getId()) != parent) {
             throw new IllegalArgumentException("Parent node " + parent.getId() + " does not belong to this tree.");
