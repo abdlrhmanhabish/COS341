@@ -1,0 +1,17 @@
+:
+void #g ( ) {
+  #x
+  :
+  :
+  #x = 1 ;
+  return
+}
+void #h ( ) {
+  :
+  :
+  print ( #x ) ;
+  return
+}
+:
+#g ( ) ;
+#h ( ) ;

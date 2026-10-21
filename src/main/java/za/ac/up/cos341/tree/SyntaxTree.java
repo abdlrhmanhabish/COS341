@@ -79,6 +79,24 @@ public final class SyntaxTree {
         return root;
     }
 
+    /**
+     * Gives a child of {@code node}. The first child has the index 0
+     *
+     * @throws IndexOutOfBoundsException if the node has less children
+     */
+    public Node child(Node node, int index) {
+        return nodes.get(node.getChildren().get(index));
+    }
+
+    // get the children of a node from left to right. the list is a copy
+    public List<Node> children(Node node) {
+        List<Node> result = new ArrayList<>(node.getChildren().size());
+        for (int id : node.getChildren()) {
+            result.add(nodes.get(id));
+        }
+        return result;
+    }
+
     // Gives all nodes of the tree in ascending ID order. The list is read-only.
     public List<Node> getNodes() {
         List<Node> all = new ArrayList<>(nodes.values());

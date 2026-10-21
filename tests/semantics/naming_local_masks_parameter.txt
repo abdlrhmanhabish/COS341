@@ -1,0 +1,10 @@
+:
+num #inc ( #n ) {
+  #n
+  :
+  :
+  #n = add ( #n 1 ) ;
+  return ( #n )
+}
+:
+print ( #inc ( 1 ) ) ;

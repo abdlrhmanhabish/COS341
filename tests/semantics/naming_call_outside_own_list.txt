@@ -1,0 +1,5 @@
+:
+void #helper ( ) { : : print "help" ; return }
+void #worker ( ) { : : #helper ( ) ; return }
+:
+#worker ( ) ;

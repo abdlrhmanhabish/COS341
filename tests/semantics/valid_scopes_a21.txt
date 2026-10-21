@@ -1,0 +1,27 @@
+#x
+:
+num #f ( ) {
+  :
+  void #g ( ) {
+    #x
+    :
+    void #j ( ) { : : #x = 1 ; return }
+    :
+    #j ( ) ;
+    return
+  }
+  void #h ( ) {
+    :
+    void #k ( ) { : : #x = 2 ; return }
+    :
+    #k ( ) ;
+    return
+  }
+  :
+  #g ( ) ;
+  #h ( ) ;
+  return ( #x )
+}
+:
+#x = #f ( ) ;
+print ( #x ) ;

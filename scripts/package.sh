@@ -30,10 +30,12 @@ echo "Checking the jar on tests/lexer/valid_03_function.txt"
 check="$(mktemp -d)"
 cp "$root/tests/lexer/valid_03_function.txt" "$check/SPL.txt"
 (cd "$check" && java -jar "$out/$name.jar")
-if [ ! -f "$check/tree.xml" ]; then
-    echo "The jar did not write tree.xml." >&2
-    exit 1
-fi
+for output in tree.xml symbol-table.txt; do
+    if [ ! -f "$check/$output" ]; then
+        echo "The jar did not write $output." >&2
+        exit 1
+    fi
+done
 rm -rf "$check"
 echo "Jar: dist/$name.jar"
 

@@ -3,7 +3,7 @@ package za.ac.up.cos341.parser;
 import java.util.Random;
 
 // It writes random SPL programs by expanding the grammar from the start symbol and the depth limits keep the programs finite
-final class RandomProgram {
+public final class RandomProgram {
 
     private static final String[] NAMES = {"#a", "#b", "#x1", "#counter", "#", "#9"};
     private static final String[] NUMBERS = {"0", "7", "-3", "12.5", "-0.25", "100", "0.001"};
@@ -19,7 +19,7 @@ final class RandomProgram {
         random = new Random(seed);
     }
 
-    static String generate(long seed) {
+    public static String generate(long seed) {
         RandomProgram generator = new RandomProgram(seed);
         generator.program(0);
         return generator.text.toString();

@@ -1,0 +1,28 @@
+#n #sum
+:
+num #square ( #n ) { : : return ( mul ( #n #n ) ) }
+void #report ( #v ) {
+  #n
+  :
+  num #twice ( #a ) { : : return ( add ( #a #a ) ) }
+  :
+  #n = #twice ( #v ) ;
+  print ( #n ) ;
+  return
+}
+void #again ( #v ) {
+  :
+  num #twice ( #a ) { : : return ( mul ( #a 2 ) ) }
+  :
+  print ( #twice ( #v ) ) ;
+  return
+}
+:
+#n = 1 ;
+#sum = 0 ;
+while lesser ( #n 4 ) do {
+  #sum = add ( #sum #square ( #n ) ) ;
+  #n = add ( #n 1 ) ;
+} ;
+#report ( #sum ) ;
+#again ( #sum ) ;
