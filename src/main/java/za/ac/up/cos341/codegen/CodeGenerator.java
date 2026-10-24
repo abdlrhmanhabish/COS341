@@ -106,7 +106,9 @@ public final class CodeGenerator {
     // every print ends with a line break, as agreed in the group
     private String print(Node output) {
         if (output.getChildren().size() == 1) {
-            return "std::cout << " + tree.child(output, 0).getContents() + " << std::endl";
+            // a string like "??!" would be read as trigraph by compilers before C++17
+            String text = tree.child(output, 0).getContents().replace("?", "\\?");
+            return "std::cout << " + text + " << std::endl";
         }
         String v = newVar();
         return declare(v) + NL + term(tree.child(output, 1), v) + " ;" + NL + "std::cout << " + v + " << std::endl";
@@ -143,7 +145,7 @@ public final class CodeGenerator {
                 + result + " = " + a + " " + binop(operator) + " " + b;
     }
 
-    // BRANCH -> if BOOL then { ALGO } else { ALGO }   no else in the target language, so the false code comes first
+    // BRANCH -> if BOOL then { ALGO } else { ALGO }   the target language has no else and the false code comes first
     private String branch(Node branch) {
         String la = newLabel();
         String lb = newLabel();

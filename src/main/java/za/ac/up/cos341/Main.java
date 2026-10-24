@@ -30,7 +30,6 @@ public final class Main {
     static final String DEFAULT_INPUT = "SPL.txt";
     static final String TREE_FILE = "tree.xml";
     static final String TABLE_FILE = "symbol-table.txt";
-    static final String CODE_FILE = "code.cpp";
 
     //exit codes
     static final int CORRECT = 0;
@@ -79,7 +78,7 @@ public final class Main {
         String file = input.getFileName().toString();
         Path treeFile = input.resolveSibling(TREE_FILE);
         Path tableFile = input.resolveSibling(TABLE_FILE);
-        Path codeFile = input.resolveSibling(CODE_FILE);
+        Path codeFile = input.resolveSibling(codeName(file));
         String source;
         try {
             source = Lexer.readSource(input);
@@ -144,7 +143,7 @@ public final class Main {
             try {
                 Files.deleteIfExists(codeFile);
             } catch (IOException ignored) {
-                // an old code.cpp that cannot be deleted does no harm here
+                // an old C++ file that cannot be deleted does no harm here
             }
         } catch (IOException e) {
             err.println("Could not write " + codeFile + ": " + e.getMessage());
@@ -173,6 +172,14 @@ public final class Main {
         String count = errors.size() + (naming ? " naming error" : " type error") + (errors.size() == 1 ? "" : "s");
         return rejected(err, naming ? NAMING_ERROR : TYPE_ERROR, "Found " + count + ". No symbol table was written.",
                 oldFiles);
+    }
+
+    // the C++ file is named after the SPL file: SPL.txt gives SPL.cpp.
+    // An input which already ends with .cpp keeps whothele name in front of the new extension
+    static String codeName(String input) {
+        int dot = input.lastIndexOf('.');
+        String name = (dot > 0 ? input.substring(0, dot) : input) + ".cpp";
+        return name.equals(input) ? input + ".cpp" : name;
     }
 
     static Path findInput(String[] args, Path workingDirectory) {
@@ -296,6 +303,7 @@ public final class Main {
         stream.println("Usage: " + command + " [FILE]");
         stream.println("Checks the SPL program in FILE against the syntax rules and the naming and type rules.");
         stream.println("The syntax tree goes to " + TREE_FILE + " and the symbol table to " + TABLE_FILE + " in the folder of FILE.");
+        stream.println("The C++ program goes to a file named after FILE in the same folder, for example SPL.cpp.");
         stream.println("Without FILE the program reads " + DEFAULT_INPUT + " from the current folder.");
     }
 }

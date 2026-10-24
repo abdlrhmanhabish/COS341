@@ -51,6 +51,12 @@ class CodeGeneratorTest {
     }
 
     @Test
+    void questionMarksAreEscapedAgainstTrigraphs() {
+        String code = generate(": : print \"what??!\" ;");
+        assertTrue(code.contains("std::cout << \"what\\?\\?!\" << std::endl ;"), code);
+    }
+
+    @Test
     void assignmentGoesThroughANewVariable() {
         String code = generate("#x : : #x = 5 ;");
         assertTrue(code.contains("int t1 ;\nt1 = 5 ;\nv1_x = t1 ;"), code);

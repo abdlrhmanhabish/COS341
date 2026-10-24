@@ -86,7 +86,8 @@ Found 1 naming error. No symbol table was written.
 ## Code generation (project phase 3a)
 
 `za.ac.up.cos341.codegen.CodeGenerator` translates the algorithms of a type-checked program into C++ as
-task sheet 3a describes. For a correct program `Main` writes `code.cpp` next to `tree.xml`.
+task sheet 3a describes. For a correct program `Main` writes the C++ program next to `tree.xml`. It is named after the input
+file. `SPL.txt` gives `SPL.cpp`.
 
 - Every term gets a fresh variable `t1`, `t2`, ... declared as `int` or `float`. The number type comes from
   phase 2b. Variables use their internal names from phase 2a (`v1_x`).
@@ -94,12 +95,14 @@ task sheet 3a describes. For a correct program `Main` writes `code.cpp` next to 
   jumps with labels `L1`, `L2`, ... The false code of a branch comes first, as the task sheet shows.
 - `while` is translated as `until not`, and `do ... until` as `do ... while not`.
 - Every `print` ends with a line break, and every `;` with a new line.
+- A `?` inside a printed string is written as `\?`. Compilers before C++17 would otherwise read `??!`
+  or `??-` as trigraphs and would print other characters.
 - The task sheet's `not` and `and` rules taken literally send both outcomes of a condition to the same
   place. `jumpIfTrue` and `jumpIfFalse` keep the idea (the dummy label is the code right behind the jump)
   and add the missing `goto`.
 
 Function calls are left to phase 3b. It implements `CallTranslator` and plugs it in with
-`setCallTranslator`. Until then a program with a call gets no `code.cpp`. `CodeGeneratorTest` compiles the
+`setCallTranslator`. Until then a program with a call gets no C++ file. `CodeGeneratorTest` compiles the
 programs in `tests/codegen` with g++ when it is installed and compares their output with the `.expected` files.
 
 ## Building and running
@@ -117,7 +120,7 @@ option. JDK 17 and JDK 21 are tested.
 
 | Exit code | Meaning |
 | --- | --- |
-| 0 | correct program, `tree.xml` and `symbol-table.txt` written |
+| 0 | correct program, `tree.xml`, `symbol-table.txt` and the C++ file (`SPL.cpp` for `SPL.txt`) written |
 | 1 | lexical or syntax error |
 | 2 | the input file cannot be used |
 | 3 | naming error (phase 2a) |
@@ -252,11 +255,13 @@ src/main/java/za/ac/up/cos341/lexer/        Lexer, Token, TokenType, LexicalExce
 src/main/java/za/ac/up/cos341/parser/       Parser, SyntaxError
 src/main/java/za/ac/up/cos341/tree/         Node, NodeKind, SyntaxTree, XmlWriter
 src/main/java/za/ac/up/cos341/semantics/    NameAnalyser, TypeAnalyser, SymbolTable, Symbol
+src/main/java/za/ac/up/cos341/codegen/      CodeGenerator, CallTranslator
 src/test/java/za/ac/up/cos341/              JUnit 5 tests and the random program generators
 src/docs/                                   grammar analysis and the design of the semantic analysis
 tests/lexer/                                lexer test inputs
 tests/semantics/                            example programs for the naming and type rules
 tests/tutor-p1/                             the six test cases of project part 1
+tests/codegen/                              programs for the code generator with their expected output
 tests/sample-tree.xml                       the sample tree.xml
 manual/user-manual.pdf                      user manual for the tutors
 scripts/package.sh                          builds group-N.jar and the upload zip

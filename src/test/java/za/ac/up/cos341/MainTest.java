@@ -273,6 +273,17 @@ class MainTest {
     }
 
     @Test
+    void theCppFileIsNamedAfterTheInput() throws IOException {
+        write(folder.resolve("first.txt"), ": : print \"one\" ;");
+        assertEquals(0, run("first.txt"));
+        assertTrue(Files.exists(folder.resolve("first.cpp")));
+        assertTrue(output().contains("The target code was written to " + folder.resolve("first.cpp")), output());
+        assertEquals("SPL.cpp", Main.codeName("SPL.txt"));
+        assertEquals("prog.cpp", Main.codeName("prog"));
+        assertEquals("prog.cpp.cpp", Main.codeName("prog.cpp"));
+    }
+
+    @Test
     void helpOptionPrintsTheUsage() {
         assertEquals(0, run("--help"));
         assertTrue(output().startsWith("Usage: "), output());
