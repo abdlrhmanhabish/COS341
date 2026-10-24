@@ -85,7 +85,7 @@ class MainTest {
         assertEquals("", errors());
         String table = new String(Files.readAllBytes(folder.resolve("symbol-table.txt")), StandardCharsets.UTF_8);
         assertTrue(table.contains("f1_inc"), table);
-        assertTrue(output().endsWith("The symbol table was written to " + folder.resolve("symbol-table.txt") + "\n"), output());
+        assertTrue(output().contains("The symbol table was written to " + folder.resolve("symbol-table.txt") + "\n"), output());
     }
 
     // every UNID is unique and every CHILDREN entry points to a node whose PARENT points back

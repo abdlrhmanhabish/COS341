@@ -1,0 +1,12 @@
+#x #y
+:
+:
+#x = 5 ;
+#y = add ( #x mul ( 2 3 ) ) ;
+print ( #y ) ;
+print "hello" ;
+comment "a,note" ;
+nop ;
+#y = neg ( sub ( #y 1 ) ) ;
+print ( #y ) ;
+print ( mod ( 17 5 ) ) ;

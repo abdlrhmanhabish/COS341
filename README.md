@@ -83,6 +83,25 @@ Hint: #x is declared in the function #g on line 3, column 3. The variables of
 Found 1 naming error. No symbol table was written.
 ```
 
+## Code generation (project phase 3a)
+
+`za.ac.up.cos341.codegen.CodeGenerator` translates the algorithms of a type-checked program into C++ as
+task sheet 3a describes. For a correct program `Main` writes `code.cpp` next to `tree.xml`.
+
+- Every term gets a fresh variable `t1`, `t2`, ... declared as `int` or `float`. The number type comes from
+  phase 2b. Variables use their internal names from phase 2a (`v1_x`).
+- The target language has no `else` and no `&&`, `||` or `!`. Conditions become cascading `if ( x op y ) goto L`
+  jumps with labels `L1`, `L2`, ... The false code of a branch comes first, as the task sheet shows.
+- `while` is translated as `until not`, and `do ... until` as `do ... while not`.
+- Every `print` ends with a line break, and every `;` with a new line.
+- The task sheet's `not` and `and` rules taken literally send both outcomes of a condition to the same
+  place. `jumpIfTrue` and `jumpIfFalse` keep the idea (the dummy label is the code right behind the jump)
+  and add the missing `goto`.
+
+Function calls are left to phase 3b. It implements `CallTranslator` and plugs it in with
+`setCallTranslator`. Until then a program with a call gets no `code.cpp`. `CodeGeneratorTest` compiles the
+programs in `tests/codegen` with g++ when it is installed and compares their output with the `.expected` files.
+
 ## Building and running
 
 ```
