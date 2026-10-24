@@ -1,0 +1,12 @@
+#a #b
+:
+:
+#a = 3 ;
+#b = 7 ;
+if larger ( #a #b ) then { print "agtb" ; } else { print "aleb" ; } ;
+if not ( larger ( #a #b ) ) then { print "notok" ; } else { print "notbad" ; } ;
+if and ( lesser ( #a #b ) eq ( #b 7 ) ) then { print "andok" ; } else { print "andbad" ; } ;
+if and ( lesser ( #a #b ) eq ( #b 8 ) ) then { print "andbad" ; } else { print "andok" ; } ;
+if or ( eq ( #a 1 ) eq ( #b 7 ) ) then { print "orok" ; } else { print "orbad" ; } ;
+if or ( eq ( #a 1 ) eq ( #b 1 ) ) then { print "orbad" ; } else { print "orok" ; } ;
+if not ( and ( eq ( #a 3 ) not ( or ( eq ( #b 1 ) eq ( #b 2 ) ) ) ) ) then { print "bad" ; } else { print "nestok" ; } ;

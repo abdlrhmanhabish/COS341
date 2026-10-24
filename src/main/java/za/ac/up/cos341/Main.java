@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import za.ac.up.cos341.codegen.CodeGenerator;
 import za.ac.up.cos341.lexer.Lexer;
 import za.ac.up.cos341.lexer.LexicalException;
 import za.ac.up.cos341.lexer.Token;
@@ -77,6 +78,7 @@ public final class Main {
         String file = input.getFileName().toString();
         Path treeFile = input.resolveSibling(TREE_FILE);
         Path tableFile = input.resolveSibling(TABLE_FILE);
+        Path codeFile = input.resolveSibling(codeName(file));
         String source;
         try {
             source = Lexer.readSource(input);
@@ -92,14 +94,14 @@ public final class Main {
         } catch (LexicalException e) {
             report(err, "Lexical error", file, e.getLine(), e.getColumn(), e.getOffendingText().length(),
                     "The text " + e.getOffendingText() + " is not a valid SPL token.", e.getHint(), source);
-            return rejected(err, REJECTED, "No tree.xml was written.", treeFile, tableFile);
+            return rejected(err, REJECTED, "No tree.xml was written.", treeFile, tableFile, codeFile);
         } catch (SyntaxError e) {
             report(err, "Syntax error", file, e.getLine(), e.getColumn(), e.getLength(),
                     e.getMessage(), e.getHint(), source);
-            return rejected(err, REJECTED, "No tree.xml was written.", treeFile, tableFile);
+            return rejected(err, REJECTED, "No tree.xml was written.", treeFile, tableFile, codeFile);
         } catch (StackOverflowError e) {
             err.println("Syntax error in " + file + ": the program is nested too deeply to be analysed.");
-            return rejected(err, REJECTED, "No tree.xml was written.", treeFile, tableFile);
+            return rejected(err, REJECTED, "No tree.xml was written.", treeFile, tableFile, codeFile);
         }
         try {
             XmlWriter.write(tree, treeFile);
@@ -117,10 +119,10 @@ public final class Main {
             // the whole report goes to one stream and consoles cannot mix up the order of the lines
             err.println(file + " is syntactically correct and its syntax tree was written to " + treeFile);
             err.println();
-            return semanticErrors(err, e, file, source, tableFile);
+            return semanticErrors(err, e, file, source, tableFile, codeFile);
         } catch (StackOverflowError e) {
             err.println("The program in " + file + " is nested too deeply to be analysed.");
-            return rejected(err, REJECTED, "No symbol table was written.", tableFile);
+            return rejected(err, REJECTED, "No symbol table was written.", tableFile, codeFile);
         }
         try {
             Files.write(tableFile, table.toText(leaves).replace("\n", System.lineSeparator())
@@ -132,11 +134,26 @@ public final class Main {
         out.println(file + " contains a correct SPL program.");
         out.println("The syntax tree has " + tree.size() + " nodes and was written to " + treeFile);
         out.println("The symbol table was written to " + tableFile);
+        try {
+            String code = new CodeGenerator(tree, table).program();
+            Files.write(codeFile, code.replace("\n", System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
+            out.println("The target code was written to " + codeFile);
+        } catch (UnsupportedOperationException e) {
+            out.println("No target code was written yet. " + e.getMessage());
+            try {
+                Files.deleteIfExists(codeFile);
+            } catch (IOException ignored) {
+                // an old C++ file that cannot be deleted does no harm here
+            }
+        } catch (IOException e) {
+            err.println("Could not write " + codeFile + ": " + e.getMessage());
+            return FILE_PROBLEM;
+        }
         return CORRECT;
     }
 
     //this prints the naming or type errors one afterone
-    private static int semanticErrors(PrintStream err, SemanticException e, String file, String source, Path tableFile) {
+    private static int semanticErrors(PrintStream err, SemanticException e, String file, String source, Path... oldFiles) {
         List<SemanticError> errors = e.getErrors();
         int shown = Math.min(errors.size(), SHOWN_ERRORS);
         for (int i = 0; i < shown; i++) {
@@ -154,7 +171,15 @@ public final class Main {
         boolean naming = e.getKind() == SemanticException.Kind.NAMING;
         String count = errors.size() + (naming ? " naming error" : " type error") + (errors.size() == 1 ? "" : "s");
         return rejected(err, naming ? NAMING_ERROR : TYPE_ERROR, "Found " + count + ". No symbol table was written.",
-                tableFile);
+                oldFiles);
+    }
+
+    // the C++ file is named after the SPL file: SPL.txt gives SPL.cpp.
+    // An input which already ends with .cpp keeps whothele name in front of the new extension
+    static String codeName(String input) {
+        int dot = input.lastIndexOf('.');
+        String name = (dot > 0 ? input.substring(0, dot) : input) + ".cpp";
+        return name.equals(input) ? input + ".cpp" : name;
     }
 
     static Path findInput(String[] args, Path workingDirectory) {
@@ -278,6 +303,7 @@ public final class Main {
         stream.println("Usage: " + command + " [FILE]");
         stream.println("Checks the SPL program in FILE against the syntax rules and the naming and type rules.");
         stream.println("The syntax tree goes to " + TREE_FILE + " and the symbol table to " + TABLE_FILE + " in the folder of FILE.");
+        stream.println("The C++ program goes to a file named after FILE in the same folder, for example SPL.cpp.");
         stream.println("Without FILE the program reads " + DEFAULT_INPUT + " from the current folder.");
     }
 }

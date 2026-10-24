@@ -1,0 +1,6 @@
+#x
+:
+:
+#x = div ( 7 2 ) ;
+print ( #x ) ;
+print ( add ( 0.5 #x ) ) ;

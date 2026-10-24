@@ -1,0 +1,16 @@
+#i #s
+:
+:
+#i = 0 ;
+#s = 0 ;
+while lesser ( #i 5 ) do { #s = add ( #s #i ) ; #i = add ( #i 1 ) ; } ;
+print ( #s ) ;
+#i = 0 ;
+until eq ( #i 3 ) do { #i = add ( #i 1 ) ; } ;
+print ( #i ) ;
+#i = 0 ;
+do { #i = add ( #i 2 ) ; } while lesser ( #i 7 ) ;
+print ( #i ) ;
+#i = 0 ;
+do { #i = add ( #i 1 ) ; } until larger ( #i 4 ) ;
+print ( #i ) ;
