@@ -121,4 +121,18 @@ class SyntaxTreeTest {
             assertEquals(i, nodes.get(i).getId());
         }
     }
+
+    @Test
+    void childrenAreFoundByTheirPosition() {
+        SyntaxTree tree = new SyntaxTree();
+        Node root = tree.createRoot("SPL_PROG");
+        Node p = tree.createInner("P", root);
+        Node colon = tree.createLeaf(":", p);
+        Node algo = tree.createInner("ALGO", p);
+        assertSame(p, tree.child(root, 0));
+        assertSame(algo, tree.child(p, 1));
+        assertEquals(Arrays.asList(colon, algo), tree.children(p));
+        assertTrue(tree.children(algo).isEmpty());
+        assertThrows(IndexOutOfBoundsException.class, () -> tree.child(algo, 0));
+    }
 }

@@ -1,0 +1,4 @@
+:
+num #one ( ) { : : return ( 1 ) }
+:
+#one ( ) ;

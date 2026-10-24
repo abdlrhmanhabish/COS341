@@ -1,0 +1,6 @@
+#a #b #a
+:
+void #f ( #p #p ) { : : return }
+void #f ( ) { : : return }
+:
+nop ;

@@ -1,0 +1,5 @@
+:
+num #add ( #a #b ) { : : return ( add ( #a #b ) ) }
+:
+print ( #add ( 1 ) ) ;
+print ( #add ( 1 2 3 ) ) ;
