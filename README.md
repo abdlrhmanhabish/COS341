@@ -94,6 +94,9 @@ file. `SPL.txt` gives `SPL.cpp`.
 - The target language has no `else` and no `&&`, `||` or `!`. Conditions become cascading `if ( x op y ) goto L`
   jumps with labels `L1`, `L2`, ... The false code of a branch comes first, as the task sheet shows.
 - `while` is translated as `until not`, and `do ... until` as `do ... while not`.
+- The cascading jumps test `and` and `or` from left to right and stop as soon as the result is known.
+  The second condition is skipped when the first one decides. This only shows when the second condition
+  calls a function which prints something.
 - Every `print` ends with a line break, and every `;` with a new line.
 - A `?` inside a printed string is written as `\?`. Compilers before C++17 would otherwise read `??!`
   or `??-` as trigraphs and would print other characters.
@@ -104,15 +107,16 @@ file. `SPL.txt` gives `SPL.cpp`.
 
 ## Function calls by inlining (project phase 3b)
 
-`za.ac.up.cos341.codegen.Inliner` is the `CallTranslator` of phase 3b. `Main` plugs it in with `setCallTranslator`, so a program
-with function calls now gets its C++ file as well. SPL has no recursion, therefore no run-time stack is needed.
+`za.ac.up.cos341.codegen.Inliner` is the `CallTranslator` of phase 3b. `Main` plugs it in with `setCallTranslator`. A program
+with function calls now gets its C++ file as well. SPL has no recursion and needs no run-time stack.
 
 The C++ file has two parts:
 
-1. **The code-mine.** It is only comments and never runs. Every function has its own `/* ... */` comment with its parameters,
-   its local variables, its body and, for a `num` function, its return variable `r` (`f` + `_` + a fresh `tN`).
-   A function inside a function is mined before the function around it. Calls inside a body are already inlined here
-   (the first phase of the inlining). C comments do not nest, so the `/* */` of the mined code are written as `(* *)` inside the mine.
+1. **The code-mine.** It is only comments and never runs. Every function has its own `/* ... */` comment. It lists the
+   parameters and the local variables of the function together with its body. A `num` function also names its return
+   variable `r` (`f` + `_` + a fresh `tN`). A function inside a function is mined before the function around it. Calls inside
+   a body are already inlined here (the first phase of the inlining). C comments do not nest. The `/* */` of the mined code
+   are therefore written as `(* *)` inside the mine.
 2. **The executable code.** For every call `NAME ( INPUT )` the generator writes `begin of inlining`, then for each argument
    a new `pN` with the code of the argument, then `a1 = p1 ; ... aN = pN ;` (all arguments are computed before the first parameter
    changes), then the body of the function, and for a `num` function `r = TERM ;` followed by `c = r`.
@@ -126,10 +130,10 @@ Decisions to know about:
   the main program. Their internal names from phase 2a are unique, and without recursion a function is never active twice.
   A local variable of a function is not reset at a call (the main program's variables are not either).
 - A `void` call is a plain instruction. A `num` call may stand wherever a term may, also inside arguments (`f ( f ( 1 ) )`),
-  conditions and loop conditions (a call in a loop condition is inlined again at every test).
+  conditions and loop conditions. The inlined code of a call in a loop condition runs again at every test.
 
-`CodeGeneratorTest` compiles the programs of `tests/codegen` with `g++`, including the `calls_*` programs for repeated inlining
-with loops, a function inside a function, calls in conditions and arguments, and void procedures with floats.
+`CodeGeneratorTest` compiles the programs of `tests/codegen` with `g++`. The `calls_*` programs among them test the
+inlining. `tests/codegen/README.txt` says what each of them covers.
 
 
 ## Building and running
@@ -172,20 +176,26 @@ No tree.xml was written.
 
 Needs a JDK, Maven and g++. Without g++ the tests that run the generated programs are skipped.
 
+```
 mvn package
 java -jar target/spl-compiler-1.0-SNAPSHOT.jar tests/codegen/calls_nested.txt
 g++ -o tests/codegen/calls_nested tests/codegen/calls_nested.cpp
 ./tests/codegen/calls_nested
+```
 
 The compiler writes calls_nested.cpp, tree.xml and symbol-table.txt next to the input file.
-The output must equal tests/codegen/calls_nested.expected. mvn test does not leave a .cpp
-behind: CodeGeneratorTest compiles into a temporary folder.
+The output must equal `tests/codegen/calls_nested.expected`. `mvn test` leaves no `.cpp` behind because
+`CodeGeneratorTest` compiles into a temporary folder.
 
 To check that no label is defined twice after inlining (no output means correct):
 
+```
 sed -n '/begin of executable C code/,$p' tests/codegen/calls_nested.cpp | grep -o '^L[0-9]* :' | sort | uniq -d
+```
 
-On Windows, shell one-liners with sed and grep need Git Bash or WSL, and compiling the generated C++ needs g++, which only works from cmd or PowerShell if MinGW or a similar toolchain is installed. Without g++ the tests that run the generated programs are skipped.
+On Windows, the shell one-liners with sed and grep need Git Bash or WSL. Compiling the generated C++ needs g++. In cmd or
+PowerShell it only works when MinGW or a similar toolchain is installed. Without g++ the tests that run the generated programs
+are skipped.
 
 ## Testing
 

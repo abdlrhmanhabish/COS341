@@ -13,8 +13,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -120,7 +124,7 @@ class CodeGeneratorTest {
         String code = generate("#x : void #f ( ) { : : nop ; return } : #f ( ) ;", true);
         String mine = code.substring(0, code.indexOf("/* begin of executable C code */"));
         assertTrue(mine.contains("code-mine for void-procedure f1_f"), code);
-        // the comments of the mined code lose their markers, so every /* in the mine is closed by exactly one */
+        // the comments of the mined code lose their markers. Every /* in the mine is then closed by exactly one */
         assertEquals(mine.split("/\\*", -1).length, mine.split("\\*/", -1).length, mine);
     }
 
@@ -129,8 +133,8 @@ class CodeGeneratorTest {
         String code = generate("#x : num #f ( #n ) { : : while lesser ( #n 3 ) do { #n = add ( #n 1 ) ; } ; return ( #n ) } : "
                 + "#x = #f ( 0 ) ; #x = #f ( #x ) ;", true);
         String main = code.substring(code.indexOf("/* begin of executable C code */"));
-        java.util.Set<String> seen = new java.util.HashSet<>();
-        java.util.regex.Matcher definitions = java.util.regex.Pattern.compile("(?m)^(L\\d+) :").matcher(main);
+        Set<String> seen = new HashSet<>();
+        Matcher definitions = Pattern.compile("(?m)^(L\\d+) :").matcher(main);
         int count = 0;
         while (definitions.find()) {
             assertTrue(seen.add(definitions.group(1)), "label defined twice: " + definitions.group(1) + "\n" + main);

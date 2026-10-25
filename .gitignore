@@ -7,3 +7,11 @@ target/
 .classpath
 .project
 dist/
+tests/codegen/*
+!tests/codegen/*.txt
+!tests/codegen/*.expected
+tests/codegen/symbol-table.txt
+tests/*/tree.xml
+tests/*/symbol-table.txt
+tests/*/*.cpp
+*.exe

@@ -1,0 +1,18 @@
+#x #y
+:
+num #upto ( #n ) {
+  #i
+  :
+  :
+  #i = 0 ;
+  while lesser ( #i #n ) do { #i = add ( #i 1 ) ; } ;
+  return ( mul ( #i 10 ) )
+}
+:
+#x = #upto ( 2 ) ;
+print ( #x ) ;
+#y = add ( #upto ( 1 ) #upto ( 3 ) ) ;
+print ( #y ) ;
+#x = 0 ;
+while lesser ( #x #upto ( 4 ) ) do { #x = add ( #x 15 ) ; } ;
+print ( #x ) ;
