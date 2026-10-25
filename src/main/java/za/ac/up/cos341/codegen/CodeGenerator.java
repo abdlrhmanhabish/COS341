@@ -55,18 +55,24 @@ public final class CodeGenerator {
         return symbol.getInternalName();
     }
 
-    // the main program as a runnable C++ file. Phase 3b extends this with the inlined functions
+    // SPL_PROG -> P$   the code-mine of the functions in comments, followed by the executable main program.
+    // The variables of the main program and of every function (parameters and locals) are declared once at the top of main.
+    // Their internal names are unique and, as there is no recursion, one function is never active twice at the same time.
     public String program() {
         Node p = tree.child(tree.getRoot(), 0);
         StringBuilder out = new StringBuilder();
+        out.append(calls.codeMine(this, tree.child(p, 2)));
+        out.append("/* begin of executable C code */").append(NL);
         out.append("#include <iostream>").append(NL).append(NL);
         out.append("int main ( ) {").append(NL);
-        for (Node name : Trees.items(tree, tree.child(p, 0))) {
-            out.append(numberType).append(' ').append(intern(name)).append(" = 0 ;").append(NL);
+        for (Symbol symbol : table.getSymbols()) {
+            if (!symbol.isFunction()) {
+                out.append(numberType).append(' ').append(symbol.getInternalName()).append(" = 0 ;").append(NL);
+            }
         }
         out.append(algorithm(tree.child(p, 4))).append(" ;").append(NL);
         out.append("return 0 ;").append(NL);
-        out.append("}").append(NL);
+        out.append("} /* end of executable C */").append(NL);
         return out.toString();
     }
 
@@ -257,7 +263,8 @@ public final class CodeGenerator {
         return tree.child(cond, 0).getContents().equals("until");
     }
 
-    private String declare(String variable) {
+    // typ variable ;
+    public String declare(String variable) {
         return numberType + " " + variable + " ;";
     }
 

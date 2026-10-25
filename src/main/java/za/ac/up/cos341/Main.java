@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import za.ac.up.cos341.codegen.CodeGenerator;
+import za.ac.up.cos341.codegen.Inliner;
 import za.ac.up.cos341.lexer.Lexer;
 import za.ac.up.cos341.lexer.LexicalException;
 import za.ac.up.cos341.lexer.Token;
@@ -135,7 +136,9 @@ public final class Main {
         out.println("The syntax tree has " + tree.size() + " nodes and was written to " + treeFile);
         out.println("The symbol table was written to " + tableFile);
         try {
-            String code = new CodeGenerator(tree, table).program();
+            CodeGenerator generator = new CodeGenerator(tree, table);
+            generator.setCallTranslator(new Inliner());
+            String code = generator.program();
             Files.write(codeFile, code.replace("\n", System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
             out.println("The target code was written to " + codeFile);
         } catch (UnsupportedOperationException e) {
