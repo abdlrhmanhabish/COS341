@@ -1,0 +1,12 @@
+#total
+:
+void #add ( #v ) { : : #total = add ( #total #v ) ; return }
+void #report ( ) { : : print "total" ; print ( #total ) ; return }
+num #half ( #v ) { : : return ( div ( #v 2 ) ) }
+:
+#total = 0 ;
+#add ( 1.5 ) ;
+#add ( #half ( 5 ) ) ;
+#report ( ) ;
+#add ( neg ( #half ( #total ) ) ) ;
+#report ( ) ;

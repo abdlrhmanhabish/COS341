@@ -2,8 +2,14 @@ package za.ac.up.cos341.codegen;
 
 import za.ac.up.cos341.tree.Node;
 
-// Phase 3b translates function calls by inlining. Until then every call is reported as not supported yet.
+// Phase 3b translates function calls by inlining (see the Inliner). NOT_YET reports every call as not supported.
 public interface CallTranslator {
+
+    // The non-executable code-mine of phase 3b: the code of every function of the given F_DECL inside C comments.
+    // Phase 3a has no functions to mine and the default is empty.
+    default String codeMine(CodeGenerator generator, Node functions) {
+        return "";
+    }
 
     // INSTR -> CALL   a call of a void function
     String instruction(CodeGenerator generator, Node call);

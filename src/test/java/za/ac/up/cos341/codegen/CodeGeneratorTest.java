@@ -13,8 +13,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -36,12 +40,21 @@ class CodeGeneratorTest {
     Path folder;
 
     private static String generate(String source) {
+        return generate(source, false);
+    }
+
+    // inlined = true plugs in the call translator of phase 3b
+    private static String generate(String source, boolean inlined) {
         List<Token> tokens = new Lexer().tokenize(source);
         SyntaxTree tree = new Parser(tokens).parse();
         LeafTokens leaves = new LeafTokens(tree, tokens);
         SymbolTable table = new NameAnalyser(tree, leaves).analyse();
         new TypeAnalyser(tree, leaves, table).analyse();
-        return new CodeGenerator(tree, table).program();
+        CodeGenerator generator = new CodeGenerator(tree, table);
+        if (inlined) {
+            generator.setCallTranslator(new Inliner());
+        }
+        return generator.program();
     }
 
     @Test
@@ -106,8 +119,33 @@ class CodeGeneratorTest {
                 () -> generate("#x : num #f ( ) { : : nop ; return ( 1 ) } : #x = #f ( ) ;"));
     }
 
+    @Test
+    void theCodeMineIsOneCommentPerFunctionAndNeverEndsEarly() {
+        String code = generate("#x : void #f ( ) { : : nop ; return } : #f ( ) ;", true);
+        String mine = code.substring(0, code.indexOf("/* begin of executable C code */"));
+        assertTrue(mine.contains("code-mine for void-procedure f1_f"), code);
+        // the comments of the mined code lose their markers. Every /* in the mine is then closed by exactly one */
+        assertEquals(mine.split("/\\*", -1).length, mine.split("\\*/", -1).length, mine);
+    }
+
+    @Test
+    void everyInliningOfAFunctionGetsItsOwnLabels() {
+        String code = generate("#x : num #f ( #n ) { : : while lesser ( #n 3 ) do { #n = add ( #n 1 ) ; } ; return ( #n ) } : "
+                + "#x = #f ( 0 ) ; #x = #f ( #x ) ;", true);
+        String main = code.substring(code.indexOf("/* begin of executable C code */"));
+        Set<String> seen = new HashSet<>();
+        Matcher definitions = Pattern.compile("(?m)^(L\\d+) :").matcher(main);
+        int count = 0;
+        while (definitions.find()) {
+            assertTrue(seen.add(definitions.group(1)), "label defined twice: " + definitions.group(1) + "\n" + main);
+            count++;
+        }
+        assertTrue(count >= 6, main);
+    }
+
     @ParameterizedTest
-    @ValueSource(strings = {"arithmetic_and_print", "loops", "branches_and_booleans", "floats"})
+    @ValueSource(strings = {"arithmetic_and_print", "loops", "branches_and_booleans", "floats",
+            "calls_labels", "calls_nested", "calls_void_float"})
     void generatedCodeRunsWithTheExpectedOutput(String name) throws Exception {
         assumeTrue(gppAvailable(), "g++ is not installed");
         Path examples = Paths.get("tests", "codegen");
@@ -115,7 +153,7 @@ class CodeGeneratorTest {
         String expected = new String(Files.readAllBytes(examples.resolve(name + ".expected")), StandardCharsets.UTF_8);
         Path cpp = folder.resolve("code.cpp");
         Path exe = folder.resolve("prog");
-        Files.write(cpp, generate(source).getBytes(StandardCharsets.UTF_8));
+        Files.write(cpp, generate(source, true).getBytes(StandardCharsets.UTF_8));
         assertEquals(0, exec(folder, "g++", "-o", exe.toString(), cpp.toString()).exit, "g++ rejected the code");
         Result run = exec(folder, exe.toString());
         assertEquals(0, run.exit);
