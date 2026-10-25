@@ -1,6 +1,20 @@
 # SPL Compiler
 
-Compiler Construction Project (COS341, 2026).
+Compiler Construction Project (COS341, 2026) of group 31.
+
+The compiler reads an SPL program from a plain ASCII file and translates it into C++. The phases run one
+after the other. Each of them only starts when the phase before it found no error.
+
+| Phase | Package | Result |
+| --- | --- | --- |
+| 1: lexer and parser | `lexer`, `parser`, `tree` | the syntax tree in `tree.xml` |
+| 2a: names and scopes | `semantics` | a unique internal name for every entity |
+| 2b: types | `semantics` | the type of every node and `symbol-table.txt` |
+| 3a: code for the algorithms | `codegen` | goto code with cascading jumps |
+| 3b: function calls | `codegen` | the code mine and the inlined calls in `SPL.cpp` |
+
+All the output files are written into the folder of the input file. The C++ file is named after the input.
+`SPL.txt` gives `SPL.cpp`.
 
 ## Front end (project phase 1)
 
@@ -104,6 +118,10 @@ file. `SPL.txt` gives `SPL.cpp`.
   place. `jumpIfTrue` and `jumpIfFalse` keep the idea (the dummy label is the code right behind the jump)
   and add the missing `goto`.
 
+The generated file is meant to be read by people. The first line in the file shows how to compile it. The code mine
+follows between `/* begin code mine */` and `/* end code mine */`, and after it comes `main`. Every statement inside
+`main` is indented by four spaces while the labels stay at the left margin.
+
 
 ## Function calls by inlining (project phase 3b)
 
@@ -134,6 +152,35 @@ Decisions to know about:
 
 `CodeGeneratorTest` compiles the programs of `tests/codegen` with `g++`. The `calls_*` programs among them test the
 inlining. `tests/codegen/README.txt` says what each of them covers.
+
+## Compiling the generated code
+
+The output uses `#include <iostream>` and `std::cout` like the task sheets, so it is C++.
+Our choice for the run tests is **g++**:
+
+```
+g++ SPL.cpp -o SPL
+./SPL                (on Windows: SPL)
+```
+
+gcc works as well. It compiles a `.cpp` file as C++ but does not link the C++ library by itself. With gcc
+the command needs `-lstdc++`:
+
+```
+gcc SPL.cpp -lstdc++ -o SPL
+```
+
+Without `-lstdc++` gcc stops with undefined references to `std::cout`. The first line of every generated
+file and the last message of the jar show the commands. No other options are needed. These compilers
+built the code without errors:
+
+- g++ 13.3 and gcc 13.3 with `-lstdc++` on Linux (A#34 names gcc 13)
+- g++ 14.1 from MSYS2 on Windows
+- g++ 6.3 and gcc 6.3 with `-lstdc++` from MinGW on Windows
+- g++ in strict mode with `-pedantic-errors` and each of `-std=c++98`, `-std=c++11` and `-std=c++17`
+
+With `-Wall` g++ warns about labels that no jump uses. The translation of an `if` always creates the else
+label of the task sheet, even when nothing jumps to it. The warning does no harm.
 
 
 ## Building and running
@@ -199,8 +246,7 @@ are skipped.
 
 ## Testing
 
-Besides unit tests for every part, `GeneratedProgramTest` follows the advice of announcement A#23.
-It generates 1000 random programs from the grammar and checks that each one is accepted. Every
+Besides unit tests for every part, `GeneratedProgramTest` generates 1000 random programs from the grammar and checks that each one is accepted. Every
 tree must be a derivation tree of the original grammar whose leaves are exactly the input tokens.
 The same programs are then damaged by removing, adding or replacing one token. The parser must
 answer those with a valid tree or a `SyntaxError` and never with any other exception.
@@ -211,6 +257,14 @@ accept all of them, and every name must be linked to the declaration the generat
 the programs are damaged in a single place. A name may be replaced by an unknown one or a call may get
 an extra argument. Another test brings `mod` and `div` together. Each damaged program must give exactly
 one error at the damaged token.
+
+`GeneratedCodeTest` checks the whole compiler at once. It translates 1000 random programs of
+`ValidProgram`, compiles them with g++ and starts them. Each program must print exactly what
+`Interpreter` prints for it. This small interpreter in the test code runs the syntax tree directly and
+gives every construct the meaning of the generated code. The hand-made `.expected` files of
+`tests/codegen` check the interpreter itself. Programs that would divide by zero are left out, and
+`-Dspl.programs=3000` checks more programs than the default. `CodeGeneratorTest` also builds the
+examples with gcc and in strict C++98, C++11 and C++17.
 
 The folders `tests/semantics` and `tests/tutor-p1` hold example programs for every rule and the six
 test cases of project part 1. `MainTest` runs all of them and checks their exit codes.
@@ -312,7 +366,7 @@ src/main/java/za/ac/up/cos341/parser/       Parser, SyntaxError
 src/main/java/za/ac/up/cos341/tree/         Node, NodeKind, SyntaxTree, XmlWriter
 src/main/java/za/ac/up/cos341/semantics/    NameAnalyser, TypeAnalyser, SymbolTable, Symbol
 src/main/java/za/ac/up/cos341/codegen/      CodeGenerator, CallTranslator
-src/test/java/za/ac/up/cos341/              JUnit 5 tests and the random program generators
+src/test/java/za/ac/up/cos341/              JUnit 5 tests, the random program generators and the interpreter
 src/docs/                                   grammar analysis and the design of the semantic analysis
 tests/lexer/                                lexer test inputs
 tests/semantics/                            example programs for the naming and type rules

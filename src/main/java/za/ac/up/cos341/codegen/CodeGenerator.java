@@ -61,18 +61,34 @@ public final class CodeGenerator {
     public String program() {
         Node p = tree.child(tree.getRoot(), 0);
         StringBuilder out = new StringBuilder();
+        out.append("/* begin code mine */").append(NL).append(NL);
         out.append(calls.codeMine(this, tree.child(p, 2)));
+        out.append("/* end code mine */").append(NL).append(NL);
         out.append("/* begin of executable C code */").append(NL);
         out.append("#include <iostream>").append(NL).append(NL);
         out.append("int main ( ) {").append(NL);
+        StringBuilder body = new StringBuilder();
         for (Symbol symbol : table.getSymbols()) {
             if (!symbol.isFunction()) {
-                out.append(numberType).append(' ').append(symbol.getInternalName()).append(" = 0 ;").append(NL);
+                body.append(numberType).append(' ').append(symbol.getInternalName()).append(" = 0 ;").append(NL);
             }
         }
-        out.append(algorithm(tree.child(p, 4))).append(" ;").append(NL);
-        out.append("return 0 ;").append(NL);
+        body.append(algorithm(tree.child(p, 4))).append(" ;").append(NL);
+        body.append("return 0 ;").append(NL);
+        out.append(indent(body.toString()));
         out.append("} /* end of executable C */").append(NL);
+        return out.toString();
+    }
+
+    // Four spaces in front of every line of the code. the labels stay at the lefft margin so the jumps to them are easy to find
+    static String indent(String code) {
+        StringBuilder out = new StringBuilder(code.length() + code.length() / 4);
+        for (String line : code.split(NL)) {
+            if (!line.isEmpty() && !line.matches("L\\d+ :.*")) {
+                out.append("    ");
+            }
+            out.append(line).append(NL);
+        }
         return out.toString();
     }
 

@@ -278,9 +278,16 @@ class MainTest {
         assertEquals(0, run("first.txt"));
         assertTrue(Files.exists(folder.resolve("first.cpp")));
         assertTrue(output().contains("The target code was written to " + folder.resolve("first.cpp")), output());
+        assertTrue(output().endsWith("It is C++ code. Compile it with  g++ first.cpp -o first  and run first"
+                + " (./first on Linux or macOS).\n"), output());
+        String code = new String(Files.readAllBytes(folder.resolve("first.cpp")), StandardCharsets.UTF_8);
+        assertTrue(code.startsWith("/* C++ program translated from first.txt. Compile it with  g++ first.cpp -o first"
+                + "  or with  gcc first.cpp -lstdc++ -o first  */"), code);
         assertEquals("SPL.cpp", Main.codeName("SPL.txt"));
         assertEquals("prog.cpp", Main.codeName("prog"));
         assertEquals("prog.cpp.cpp", Main.codeName("prog.cpp"));
+        assertEquals("g++ \"T3_ accept.cpp\" -o \"T3_ accept\"", Main.compileCommand("g++", folder.resolve("T3_ accept.cpp")));
+        assertEquals("gcc SPL.cpp -lstdc++ -o SPL", Main.compileCommand("gcc", folder.resolve("SPL.cpp")));
     }
 
     @Test

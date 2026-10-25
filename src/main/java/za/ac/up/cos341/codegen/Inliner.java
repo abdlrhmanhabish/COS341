@@ -9,7 +9,7 @@ import za.ac.up.cos341.tree.Node;
 import za.ac.up.cos341.tree.SyntaxTree;
 
 // Phase 3b: function calls by inlining. SPL has no recursion and every call can be replaced by the body of the called function
-// The code-mine shows the code of every function inside C comments. when called, the body is translated again from the syntax tree which gives every copy its own labels and temporaries.
+// The code-mine shows the code of every function inside C comments. When called, the body is translated again from the syntax tree which gives every copy its own labels and temporaries.
 public final class Inliner implements CallTranslator {
 
     private static final String NL = "\n";
@@ -29,7 +29,7 @@ public final class Inliner implements CallTranslator {
         return out.toString();
     }
 
-    // one comment per function with its parameters and ocal variables and its translated body
+    // one comment per function with its parameters and local variables and its translated body
     private String mine(CodeGenerator generator, Node definition) {
         SyntaxTree tree = generator.getTree();
         Symbol function = function(generator, tree.child(definition, 1));
@@ -51,11 +51,10 @@ public final class Inliner implements CallTranslator {
             String result = returnVariable(generator, function);
             code.append(generator.declare(result)).append(NL)
                     .append(generator.term(tree.child(definition, 9), result)).append(" ;").append(NL);
-            text.append(unnest(code.toString()));
+            text.append(CodeGenerator.indent(unnest(code.toString())));
             text.append("the result is found in the return variable ").append(result).append(NL);
-        } 
-        else {
-            text.append(unnest(code.toString()));
+        } else {
+            text.append(CodeGenerator.indent(unnest(code.toString())));
         }
         text.append("end of code-mine for ").append(function.getInternalName()).append(" */").append(NL).append(NL);
         return text.toString();

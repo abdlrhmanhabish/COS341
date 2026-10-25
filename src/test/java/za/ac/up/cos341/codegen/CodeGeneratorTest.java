@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,7 +69,27 @@ class CodeGeneratorTest {
     @Test
     void assignmentGoesThroughANewVariable() {
         String code = generate("#x : : #x = 5 ;");
-        assertTrue(code.contains("int t1 ;\nt1 = 5 ;\nv1_x = t1 ;"), code);
+        assertTrue(code.contains("    int t1 ;\n    t1 = 5 ;\n    v1_x = t1 ;"), code);
+    }
+
+    @Test
+    void mainIsIndentedAndTheLabelsStayAtTheMargin() {
+        String code = generate("#a : : if eq ( #a 1 ) then { print \"yes\" ; } else { nop ; } ;");
+        String main = code.substring(code.indexOf("int main ( ) {\n") + "int main ( ) {\n".length(), code.indexOf("} /* end of executable C */"));
+        for (String line : main.split("\n")) {
+            assertTrue(line.matches("L\\d+ :.*") || line.startsWith("    "), line);
+        }
+        assertTrue(main.contains("\nL1 : /* then */\n"), main);
+    }
+
+    @Test
+    void theCodeMineIsFramedAsTheTaskSheetShows() {
+        String code = generate("#x : void #f ( ) { : : nop ; return } : #f ( ) ;", true);
+        int begin = code.indexOf("/* begin code mine */");
+        int entry = code.indexOf("/* begin of code-mine for void-procedure f1_f");
+        int end = code.indexOf("/* end code mine */");
+        int executable = code.indexOf("/* begin of executable C code */");
+        assertTrue(begin == 0 && begin < entry && entry < end && end < executable, code);
     }
 
     @Test
@@ -143,55 +160,55 @@ class CodeGeneratorTest {
         assertTrue(count >= 6, main);
     }
 
+    // all programs in tests/codegen with their expected output
+    private static final String[] EXAMPLES = {"arithmetic_and_print", "loops", "branches_and_booleans", "floats", "calls_labels", "calls_nested", "calls_void_float"};
+
     @ParameterizedTest
     @ValueSource(strings = {"arithmetic_and_print", "loops", "branches_and_booleans", "floats",
             "calls_labels", "calls_nested", "calls_void_float"})
     void generatedCodeRunsWithTheExpectedOutput(String name) throws Exception {
-        assumeTrue(gppAvailable(), "g++ is not installed");
-        Path examples = Paths.get("tests", "codegen");
-        String source = new String(Files.readAllBytes(examples.resolve(name + ".txt")), StandardCharsets.UTF_8);
-        String expected = new String(Files.readAllBytes(examples.resolve(name + ".expected")), StandardCharsets.UTF_8);
-        Path cpp = folder.resolve("code.cpp");
-        Path exe = folder.resolve("prog");
-        Files.write(cpp, generate(source, true).getBytes(StandardCharsets.UTF_8));
-        assertEquals(0, exec(folder, "g++", "-o", exe.toString(), cpp.toString()).exit, "g++ rejected the code");
-        Result run = exec(folder, exe.toString());
-        assertEquals(0, run.exit);
-        assertEquals(expected.replace("\r\n", "\n"), run.output.replace("\r\n", "\n"));
+        assumeTrue(Compilers.available("g++"), "g++ is not installed");
+        assertEquals(expected(name), compileAndRun("g++", name));
     }
 
-    private static boolean gppAvailable() {
-        try {
-            return exec(Paths.get("."), "g++", "--version").exit == 0;
-        } catch (IOException | InterruptedException e) {
-            return false;
-        }
+    @ParameterizedTest
+    @ValueSource(strings = {"arithmetic_and_print", "loops", "branches_and_booleans", "floats",
+            "calls_labels", "calls_nested", "calls_void_float"})
+    void gccWithTheCppLibraryRunsTheSamePrograms(String name) throws Exception {
+        assumeTrue(Compilers.available("gcc"), "gcc is not installed");
+        assertEquals(expected(name), compileAndRun("gcc", name));
     }
 
-    private static final class Result {
-        final int exit;
-        final String output;
-
-        Result(int exit, String output) {
-            this.exit = exit;
-            this.output = output;
-        }
-    }
-
-    private static Result exec(Path dir, String... command) throws IOException, InterruptedException {
-        Process process = new ProcessBuilder(command).directory(dir.toFile()).redirectErrorStream(true).start();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (InputStream in = process.getInputStream()) {
-            byte[] buffer = new byte[4096];
-            int n;
-            while ((n = in.read(buffer)) > 0) {
-                out.write(buffer, 0, n);
+    // the code keeps to standard C++ and even the old C++98 and the strict C++11 will accept it without errors
+    @Test
+    void theCodeIsStandardCpp() throws Exception {
+        assumeTrue(Compilers.available("g++"), "g++ is not installed");
+        for (String name : EXAMPLES) {
+            Path cpp = folder.resolve(name + ".cpp");
+            Files.write(cpp, generate(example(name + ".txt"), true).getBytes(StandardCharsets.UTF_8));
+            for (String standard : new String[] {"-std=c++98", "-std=c++11", "-std=c++17"}) {
+                Compilers.Result result = Compilers.compile("g++", cpp, folder.resolve(name), standard, "-pedantic-errors");
+                assertEquals(0, result.exit, name + " " + standard + "\n" + result.output);
             }
         }
-        if (!process.waitFor(30, TimeUnit.SECONDS)) {
-            process.destroyForcibly();
-            return new Result(-1, "timeout");
-        }
-        return new Result(process.exitValue(), new String(out.toByteArray(), StandardCharsets.UTF_8));
+    }
+
+    private String compileAndRun(String compiler, String name) throws IOException {
+        Path cpp = folder.resolve(name + ".cpp");
+        Path program = folder.resolve(name);
+        Files.write(cpp, generate(example(name + ".txt"), true).getBytes(StandardCharsets.UTF_8));
+        Compilers.Result build = Compilers.compile(compiler, cpp, program);
+        assertEquals(0, build.exit, compiler + " rejected the code\n" + build.output);
+        Compilers.Result run = Compilers.run(folder, program.toString());
+        assertEquals(0, run.exit, run.output);
+        return run.output;
+    }
+
+    private static String expected(String name) throws IOException {
+        return example(name + ".expected").replace("\r\n", "\n");
+    }
+
+    private static String example(String file) throws IOException {
+        return new String(Files.readAllBytes(Paths.get("tests", "codegen", file)), StandardCharsets.UTF_8);
     }
 }

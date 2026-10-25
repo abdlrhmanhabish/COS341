@@ -40,7 +40,7 @@ public final class XmlWriter {
 
         Node root = tree.getRoot();
         if (root == null) {
-            throw new IllegalStateException("The tree has no root node, so there is nothing to write; call createRoot first.");
+            throw new IllegalStateException("The tree has no root node and there is nothing to write. Call createRoot first.");
         }
 
         StringBuilder builder = new StringBuilder();

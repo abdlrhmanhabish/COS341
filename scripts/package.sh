@@ -26,15 +26,31 @@ rm -rf "$out"
 mkdir -p "$out"
 cp "$jar" "$out/$name.jar"
 
-echo "Checking the jar on tests/lexer/valid_03_function.txt"
+echo "Checking the jar on tests/codegen/calls_nested.txt"
 check="$(mktemp -d)"
-cp "$root/tests/lexer/valid_03_function.txt" "$check/SPL.txt"
+cp "$root/tests/codegen/calls_nested.txt" "$check/SPL.txt"
 (cd "$check" && java -jar "$out/$name.jar")
-for output in tree.xml symbol-table.txt; do
+for output in tree.xml symbol-table.txt SPL.cpp; do
     if [ ! -f "$check/$output" ]; then
         echo "The jar did not write $output." >&2
         exit 1
     fi
+done
+for compiler in g++ gcc; do
+    if ! command -v "$compiler" > /dev/null; then
+        echo "$compiler is not installed. The generated C++ code was not compiled with it."
+        continue
+    fi
+    library=""
+    if [ "$compiler" = gcc ]; then
+        library="-lstdc++"
+    fi
+    (cd "$check" && "$compiler" SPL.cpp $library -o SPL)
+    if ! (cd "$check" && ./SPL) | diff -q - "$root/tests/codegen/calls_nested.expected" > /dev/null; then
+        echo "The program that $compiler built from SPL.cpp printed the wrong output." >&2
+        exit 1
+    fi
+    echo "The C++ code compiled with $compiler prints the expected output."
 done
 rm -rf "$check"
 echo "Jar: dist/$name.jar"

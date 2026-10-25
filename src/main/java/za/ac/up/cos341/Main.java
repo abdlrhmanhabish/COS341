@@ -135,24 +135,41 @@ public final class Main {
         out.println(file + " contains a correct SPL program.");
         out.println("The syntax tree has " + tree.size() + " nodes and was written to " + treeFile);
         out.println("The symbol table was written to " + tableFile);
+        CodeGenerator generator = new CodeGenerator(tree, table);
+        generator.setCallTranslator(new Inliner());
+        String code;
         try {
-            CodeGenerator generator = new CodeGenerator(tree, table);
-            generator.setCallTranslator(new Inliner());
-            String code = generator.program();
-            Files.write(codeFile, code.replace("\n", System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
-            out.println("The target code was written to " + codeFile);
-        } catch (UnsupportedOperationException e) {
-            out.println("No target code was written yet. " + e.getMessage());
-            try {
-                Files.deleteIfExists(codeFile);
-            } catch (IOException ignored) {
-                // an old C++ file that cannot be deleted does no harm here
-            }
+            code = generator.program();
+        } catch (StackOverflowError e) {
+            err.println("The program in " + file + " is nested too deeply for the code generator.");
+            return rejected(err, REJECTED, "No C++ file was written.", codeFile);
+        }
+        String header = "/* C++ program translated from " + file + ". Compile it with  " + compileCommand("g++", codeFile)
+                + "  or with  " + compileCommand("gcc", codeFile) + "  */\n\n";
+        try {
+            Files.write(codeFile, (header + code).replace("\n", System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             err.println("Could not write " + codeFile + ": " + e.getMessage());
             return FILE_PROBLEM;
         }
+        String program = programName(codeFile.getFileName().toString());
+        out.println("The target code was written to " + codeFile);
+        out.println("It is C++ code. Compile it with  " + compileCommand("g++", codeFile) + "  and run " + program + " (./" + program + " on Linux or macOS).");
         return CORRECT;
+    }
+
+    static String compileCommand(String compiler, Path codeFile) {
+        String source = quoted(codeFile.getFileName().toString());
+        String program = quoted(programName(codeFile.getFileName().toString()));
+        return compiler.equals("gcc") ? "gcc " + source + " -lstdc++ -o " + program : "g++ " + source + " -o " + program;
+    }
+
+    // SPL.cpp gives the program SPL
+    static String programName(String codeName) {
+        return codeName.endsWith(".cpp") ? codeName.substring(0, codeName.length() - 4) : codeName;
+    }
+    private static String quoted(String name) {
+        return name.indexOf(' ') >= 0 ? "\"" + name + "\"" : name;
     }
 
     //this prints the naming or type errors one afterone
@@ -307,6 +324,7 @@ public final class Main {
         stream.println("Checks the SPL program in FILE against the syntax rules and the naming and type rules.");
         stream.println("The syntax tree goes to " + TREE_FILE + " and the symbol table to " + TABLE_FILE + " in the folder of FILE.");
         stream.println("The C++ program goes to a file named after FILE in the same folder, for example SPL.cpp.");
+        stream.println("Compile that file with g++, or with gcc and the option -lstdc++.");
         stream.println("Without FILE the program reads " + DEFAULT_INPUT + " from the current folder.");
     }
 }

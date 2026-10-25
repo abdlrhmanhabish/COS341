@@ -22,7 +22,7 @@ import za.ac.up.cos341.tree.SyntaxTree;
 // this checks that a syntax tree is a derivation tree of the SPL grammar for a given list of tokens
 final class TreeCheck {
 
-    //Rule 0 reads SPL_PROG -> P $ there, but $ is not part of the input, so the tree has no leaf for it
+    //Rule 0 reads SPL_PROG -> P $ there, but $ is not part of the input and the tree has no leaf for it
     private static final String[] GRAMMAR = {
             "SPL_PROG -> P",
             "P -> V_DECL : F_DECL : ALGO",
